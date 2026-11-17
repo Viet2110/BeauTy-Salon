@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { api } from '../api';
-import { useAuth } from '../AuthContext';
-import { StarInput, Stars } from '../components/Stars';
+import { api } from "../../api";
+import { useAuth } from "../../AuthContext";
+import { StarInput, Stars } from "../../components/Stars";
 
 export default function Feedback() {
   const { user } = useAuth();

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, money, STATUS } from '../api';
+import { api, money, STATUS } from '../../api';
 
 export default function Appointments() {
   const [list, setList] = useState(null);

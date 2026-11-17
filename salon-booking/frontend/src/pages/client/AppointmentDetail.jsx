@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { api, money, STATUS } from '../api';
+import { api, money, STATUS } from '../../api';
 
 export default function AppointmentDetail() {
   const { id } = useParams();
