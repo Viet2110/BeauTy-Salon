@@ -19,6 +19,7 @@ export function AuthProvider({ children }) {
   const save = (data) => {
     localStorage.setItem('token', data.token);
     setUser(data.user);
+    console.log('Thông tin tài khoản:', data.user);
   };
   const login = async (email, password) => save(await api('/auth/login', { method: 'POST', body: { email, password } }));
   const register = async (form) => save(await api('/auth/register', { method: 'POST', body: form }));

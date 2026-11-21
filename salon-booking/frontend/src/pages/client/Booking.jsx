@@ -21,6 +21,7 @@ export default function Booking() {
   const [beauticians, setBeauticians] = useState([]);
   const [selected, setSelected] = useState([]);
   const [beautician, setBeautician] = useState(null);
+  const [draftBeauticianId, setDraftBeauticianId] = useState(null);
   const [info, setInfo] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
@@ -36,9 +37,33 @@ export default function Booking() {
   useEffect(() => {
     api('/salons').then((list) => {
       setSalons(list);
+
+      // Kiểm tra thông tin đặt lịch đã lưu
+      const saved = sessionStorage.getItem('bookingDraft');
+
+      if (saved) {
+        const draft = JSON.parse(saved);
+
+        const selectedSalon = list.find(
+          (s) => String(s.id) === String(draft.salonId)
+        );
+
+        if (selectedSalon) {
+          setSalon(selectedSalon);
+          setSelected(draft.selected);
+          setInfo(draft.info);
+          setDate(draft.date);
+          setTime(draft.time);
+          setDraftBeauticianId(draft.beauticianId);
+          setStep(4);
+          return;
+        }
+      }
+
+      // Nếu không có thông tin lưu thì xử lý như bình thường
       const pre = list.find((s) => String(s.id) === params.get('salon'));
       if (pre) setSalon(pre);
-    });
+    }).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -46,6 +71,21 @@ export default function Booking() {
     api(`/salons/${salon.id}/services`).then(setServices);
     api(`/salons/${salon.id}/beauticians`).then(setBeauticians);
   }, [salon]);
+  
+  useEffect(() => {
+    if (!beauticians.length) return;
+
+    if (draftBeauticianId) {
+      const savedBeautician = beauticians.find(
+        (b) => String(b.id) === String(draftBeauticianId)
+      );
+
+      setBeautician(savedBeautician || null);
+    }
+
+    sessionStorage.removeItem('bookingDraft');
+    setDraftBeauticianId(null);
+  }, [beauticians, draftBeauticianId]);
 
   useEffect(() => {
     if (!salon || !date) return;
@@ -152,10 +192,10 @@ export default function Booking() {
               <li key={s} className="flex flex-1 items-center gap-2">
                 <div className="flex flex-col items-center gap-2">
                   <div className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold transition ${i === step
-                      ? 'bg-[#a87945] text-white shadow-md'
-                      : i < step
-                        ? 'bg-[#efe2d0] text-[#8b623c]'
-                        : 'bg-[#f3f0eb] text-gray-400'
+                    ? 'bg-[#a87945] text-white shadow-md'
+                    : i < step
+                      ? 'bg-[#efe2d0] text-[#8b623c]'
+                      : 'bg-[#f3f0eb] text-gray-400'
                     }`}>
                     {i < step ? '✓' : i + 1}
                   </div>
@@ -199,8 +239,8 @@ export default function Booking() {
                       setTime('');
                     }}
                     className={`rounded-2xl border p-5 text-left transition hover:-translate-y-1 hover:shadow-md ${salon?.id === s.id
-                        ? 'border-[#a87945] bg-[#faf5ed] ring-1 ring-[#a87945]'
-                        : 'border-[#eee5d9] hover:border-[#c6a477]'
+                      ? 'border-[#a87945] bg-[#faf5ed] ring-1 ring-[#a87945]'
+                      : 'border-[#eee5d9] hover:border-[#c6a477]'
                       }`}
                   >
                     <div className="mb-3 flex items-center justify-between">
@@ -239,8 +279,8 @@ export default function Booking() {
                   <label
                     key={s.id}
                     className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition ${selected.includes(s.id)
-                        ? 'border-[#a87945] bg-[#faf5ed]'
-                        : 'border-[#eee5d9] hover:border-[#c6a477]'
+                      ? 'border-[#a87945] bg-[#faf5ed]'
+                      : 'border-[#eee5d9] hover:border-[#c6a477]'
                       }`}
                   >
                     <input
@@ -306,8 +346,8 @@ export default function Booking() {
                     setTime('');
                   }}
                   className={`rounded-2xl border p-5 text-left transition ${!beautician
-                      ? 'border-[#a87945] bg-[#faf5ed] ring-1 ring-[#a87945]'
-                      : 'border-[#eee5d9] hover:border-[#c6a477]'
+                    ? 'border-[#a87945] bg-[#faf5ed] ring-1 ring-[#a87945]'
+                    : 'border-[#eee5d9] hover:border-[#c6a477]'
                     }`}
                 >
                   <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#efe2d0] text-2xl">
@@ -329,8 +369,8 @@ export default function Booking() {
                       setTime('');
                     }}
                     className={`flex items-center gap-4 rounded-2xl border p-5 text-left transition hover:shadow-md ${beautician?.id === b.id
-                        ? 'border-[#a87945] bg-[#faf5ed] ring-1 ring-[#a87945]'
-                        : 'border-[#eee5d9] hover:border-[#c6a477]'
+                      ? 'border-[#a87945] bg-[#faf5ed] ring-1 ring-[#a87945]'
+                      : 'border-[#eee5d9] hover:border-[#c6a477]'
                       }`}
                   >
                     <img
@@ -456,8 +496,8 @@ export default function Booking() {
                       disabled={s.disabled}
                       onClick={() => setTime(s.t)}
                       className={`rounded-xl border px-5 py-2.5 text-sm font-medium transition ${time === s.t
-                          ? 'border-[#a87945] bg-[#a87945] text-white'
-                          : 'border-[#e8ded2] text-[#6f4e37] hover:border-[#a87945] hover:bg-[#faf5ed]'
+                        ? 'border-[#a87945] bg-[#a87945] text-white'
+                        : 'border-[#e8ded2] text-[#6f4e37] hover:border-[#a87945] hover:bg-[#faf5ed]'
                         } disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 disabled:line-through`}
                     >
                       {s.t}

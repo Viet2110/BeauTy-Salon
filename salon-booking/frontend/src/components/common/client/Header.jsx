@@ -37,6 +37,11 @@ function Header() {
                     <NavLink to="/feedback" className={link}>
                         Đánh giá
                     </NavLink>
+                    {user && (
+                        <NavLink to="/appointments" className={link}>
+                            Lịch hẹn
+                        </NavLink>
+                    )}
                 </nav>
 
                 {/* Account */}

@@ -1,49 +1,32 @@
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '../../../api';
 import { Link } from 'react-router-dom';
 import { Stars } from '../../../components/Stars';
 
-const salons = [
-  {
-    id: 1,
-    name: 'Luxury Beauty Salon',
-    address: '123 Nguyễn Văn Thoại, Đà Nẵng',
-    open_time: '08:00',
-    close_time: '21:00',
-    avg_rating: 4.9,
-    review_count: 120,
-    image_url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800',
-  },
-  {
-    id: 2,
-    name: 'Elegant Hair & Spa',
-    address: '45 Lê Duẩn, Đà Nẵng',
-    open_time: '09:00',
-    close_time: '22:00',
-    avg_rating: 4.8,
-    review_count: 95,
-    image_url: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800',
-  },
-  {
-    id: 3,
-    name: 'The Beauty House',
-    address: '78 Trần Phú, Đà Nẵng',
-    open_time: '08:30',
-    close_time: '20:30',
-    avg_rating: 4.7,
-    review_count: 86,
-    image_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800',
-  },
-];
-
 export default function Salons() {
   const [keyword, setKeyword] = useState('');
+  const [salons, setSalons] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSalons = async () => {
+      try {
+        const data = await api('/salons');
+        setSalons(data);
+      } catch (error) {
+        console.error('Lỗi lấy danh sách salon:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSalons();
+  }, []);
 
   const filteredSalons = salons.filter((salon) =>
     salon.name.toLowerCase().includes(keyword.toLowerCase()) ||
-    salon.address.toLowerCase().includes(keyword.toLowerCase())
+    (salon.address || '').toLowerCase().includes(keyword.toLowerCase())
   );
-
   return (
     <div className="bg-[#fffdf9] text-[#49392d]">
       {/* Banner */}
@@ -169,7 +152,11 @@ export default function Salons() {
           </div>
 
           <div className="mt-10 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredSalons.map((salon) => (
+            {loading ? (
+              <p className="col-span-full py-12 text-center text-gray-500">
+                Đang tải danh sách salon...
+              </p>
+            ) : (filteredSalons.map((salon) => (
               <div
                 key={salon.id}
                 className="overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
@@ -196,7 +183,7 @@ export default function Salons() {
                   </p>
 
                   <p className="text-sm text-gray-500">
-                    ◷ {salon.open_time} - {salon.close_time}
+                    ◷ {String(salon.open_time).slice(0, 5)} - {String(salon.close_time).slice(0, 5)}
                   </p>
 
                   <div className="flex items-center gap-2 text-sm">
@@ -223,10 +210,11 @@ export default function Salons() {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </div>
 
-          {filteredSalons.length === 0 && (
+          {!loading && filteredSalons.length === 0 && (
             <p className="py-12 text-center text-gray-500">
               Không tìm thấy salon phù hợp.
             </p>

@@ -15,7 +15,6 @@ function SideBar() {
             <h2 className="text-xl font-bold text-[#8b623c] mb-8">
                 Salon Beauty
             </h2>
-
             <nav className="space-y-2">
                 {menu.map((item) => (
                     <NavLink

@@ -1,7 +1,4 @@
 
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { useAuth } from '../AuthContext';
-
 import LayoutClient from '../pages/client/LayoutClient';
 import Auth from '../pages/client/Auth';
 import Salons from '../pages/client/Salon/Salons';
@@ -11,36 +8,69 @@ import Appointments from '../pages/client/Appointments';
 import AppointmentDetail from '../pages/client/AppointmentDetail';
 import Consultants from '../pages/client/Consultants';
 import Feedback from '../pages/client/Feedback';
+import { Route, Routes } from 'react-router-dom';
+import Home from '../pages/client/home/Home';
 
-function Private({ children }) {
-    const { user, loading } = useAuth();
-    const loc = useLocation();
+function ClientRouters() {
+    const routers = [
+        {
+            path: "/",
+            element: <Home />
+        },
+        {
+            path: "/salons",
+            element: <Salons />
+        },
 
-    if (loading) return <p className="p-8 text-center">Đang tải...</p>;
+        {
+            path: "/salons/:id",
+            element: <SalonDetail />
+        },
+        {
+            path: "/login",
+            element: <Auth mode="login" />
+        },
+        {
+            path: "/register",
+            element: <Auth mode="register" />
+        },
 
-    return user ? children : (
-        <Navigate
-            to="/login"
-            state={{ from: loc.pathname + loc.search }}
-            replace
-        />
-    );
-}
+        {
+            path: "/book",
+            element: <Booking />
+        },
+        {
+            path: "/appointments",
+            element: <Appointments />
+        },
+        {
+            path: "/appointments/:id",
+            element: <AppointmentDetail />
+        },
 
-export default function ClientRouters() {
+        {
+            path: "/consultants",
+            element: <Consultants />
+        },
+        {
+            path: "/feedback",
+            element: <Feedback />
+        },
+
+    ];
     return (
         <Routes>
-            <Route path="/" element={<LayoutClient />}>
-                <Route index element={<Salons />} />
-                <Route path="salons/:id" element={<SalonDetail />} />
-                <Route path="login" element={<Auth mode="login" />} />
-                <Route path="register" element={<Auth mode="register" />} />
-                <Route path="book" element={<Private><Booking /></Private>} />
-                <Route path="appointments" element={<Private><Appointments /></Private>} />
-                <Route path="appointments/:id" element={<Private><AppointmentDetail /></Private>} />
-                <Route path="consultants" element={<Consultants />} />
-                <Route path="feedback" element={<Feedback />} />
+            <Route element={<LayoutClient />}>
+                {routers.map((item, index) => (
+                    <Route
+                        key={index}
+                        path={item.path}
+                        element={item.element}
+                    />
+                ))}
             </Route>
         </Routes>
     );
 }
+
+export default ClientRouters;

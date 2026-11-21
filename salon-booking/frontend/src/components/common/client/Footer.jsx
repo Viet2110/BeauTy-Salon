@@ -32,7 +32,7 @@ function Footer() {
                             Email: salonbeauty@gmail.com
                         </p>
                         <p className="mt-2 text-sm text-gray-300">
-                            Hotline: 0900 123 456
+                            Hotline: 0906 499 113
                         </p>
                     </div>
                 </div>

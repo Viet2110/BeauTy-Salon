@@ -1,70 +1,7 @@
-
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { api } from '../../../api';
 import { Stars } from '../../../components/Stars';
-
-const salonData = {
-  id: 1,
-  name: 'Luxury Beauty Salon',
-  address: '123 Nguyễn Văn Thoại, Đà Nẵng',
-  phone: '0905 123 456',
-  open_time: '08:00',
-  close_time: '21:00',
-  description: 'Luxury Beauty Salon mang đến không gian làm đẹp sang trọng, đội ngũ nhân viên chuyên nghiệp và những dịch vụ chăm sóc sắc đẹp chất lượng.',
-  avg_rating: 4.9,
-  review_count: 120,
-  image_url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1400',
-};
-const services = [
-  {
-    id: 1,
-    name: 'Cắt và tạo kiểu tóc',
-    description: 'Tư vấn và tạo kiểu tóc phù hợp với khuôn mặt.',
-    price: 250000,
-    duration_min: 60,
-  },
-  {
-    id: 2,
-    name: 'Nhuộm tóc thời trang',
-    description: 'Thay đổi diện mạo với những màu tóc thời thượng.',
-    price: 650000,
-    duration_min: 120,
-  },
-  {
-    id: 3,
-    name: 'Gội đầu dưỡng sinh',
-    description: 'Thư giãn và chăm sóc tóc, da đầu chuyên sâu.',
-    price: 180000,
-    duration_min: 45,
-  },
-  {
-    id: 4,
-    name: 'Phục hồi tóc',
-    description: 'Chăm sóc và phục hồi tóc hư tổn.',
-    price: 450000,
-    duration_min: 90,
-  },
-];
-
-const beauticians = [
-  {
-    id: 1,
-    name: 'Nguyễn Minh Anh',
-    specialty: 'Chuyên gia tạo kiểu tóc',
-    avatar_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300',
-  },
-  {
-    id: 2,
-    name: 'Trần Hoàng Nam',
-    specialty: 'Chuyên gia nhuộm tóc',
-    avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300',
-  },
-  {
-    id: 3,
-    name: 'Lê Ngọc Hà',
-    specialty: 'Chuyên viên chăm sóc tóc',
-    avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300',
-  },
-];
 
 const formatMoney = (price) =>
   new Intl.NumberFormat('vi-VN', {
@@ -75,8 +12,40 @@ const formatMoney = (price) =>
 export default function SalonDetail() {
   const { id } = useParams();
 
-  // Dữ liệu mẫu, sau này sẽ thay bằng API
-  const salon = { ...salonData, id };
+  const [salon, setSalon] = useState(null);
+  const [services, setServices] = useState([]);
+  const [beauticians, setBeauticians] = useState([]);
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [salonData, serviceData, beauticianData] = await Promise.all([
+          api(`/salons/${id}`),
+          api(`/salons/${id}/services`),
+          api(`/salons/${id}/beauticians`),
+        ]);
+
+        setSalon(salonData);
+        setServices(serviceData);
+        setBeauticians(beauticianData);
+      } catch (error) {
+        console.error('Lỗi lấy dữ liệu salon:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+  if (loading) {
+    return <p className="py-20 text-center">Đang tải dữ liệu...</p>;
+  }
+
+  if (!salon) {
+    return <p className="py-20 text-center">Không tìm thấy salon.</p>;
+  }
+
 
   return (
     <div className="bg-[#fffdf9] text-[#49392d]">
@@ -144,8 +113,7 @@ export default function SalonDetail() {
               <div>
                 <p className="text-gray-500">Giờ mở cửa</p>
                 <p className="mt-1 font-semibold">
-                  ◷ {salon.open_time} - {salon.close_time}
-                </p>
+                  ◷ {String(salon.open_time).slice(0, 5)} - {String(salon.close_time).slice(0, 5)}                </p>
               </div>
 
               <div>
@@ -231,7 +199,7 @@ export default function SalonDetail() {
                 className="overflow-hidden rounded-2xl border border-[#eee5d9] bg-white text-center transition hover:-translate-y-1 hover:shadow-lg"
               >
                 <img
-                  src={b.avatar_url}
+                  src={b.avatar_url || 'https://placehold.co/400x400?text=Beauty+Staff'}
                   alt={b.name}
                   className="h-72 w-full object-cover"
                 />
