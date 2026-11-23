@@ -9,6 +9,7 @@ function AppointmentsAdmin() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [updatingId, setUpdatingId] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
 
     // Lấy danh sách lịch đặt từ API
     useEffect(() => {
@@ -65,6 +66,30 @@ function AppointmentsAdmin() {
             setUpdatingId(null);
         }
     };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Bạn có chắc chắn muốn xóa lịch đặt này không?')) {
+            return;
+        }
+
+        try {
+            setDeletingId(id);
+            setError('');
+
+            await api(`/admin/appointments/${id}`, {
+                method: 'DELETE',
+            });
+
+            setAppointments((prev) =>
+                prev.filter((item) => item.id !== id)
+            );
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
 
     // Tìm kiếm và lọc lịch đặt
     const filteredAppointments = appointments.filter((item) => {
@@ -202,20 +227,31 @@ function AppointmentsAdmin() {
                                     </td>
 
                                     <td className="px-4 py-5">
-                                        <select
-                                            value={item.status}
-                                            disabled={updatingId === item.id}
-                                            onChange={(e) =>
-                                                handleStatus(item.id, e.target.value)
-                                            }
-                                            className="rounded-lg border border-[#e8ded2] px-2 py-2 text-xs outline-none disabled:opacity-50"
-                                        >
-                                            <option value="pending">Chờ xác nhận</option>
-                                            <option value="confirmed">Đã xác nhận</option>
-                                            <option value="completed">Đã hoàn thành</option>
-                                            <option value="cancelled">Đã hủy</option>
-                                        </select>
+                                        <div className="flex items-center gap-2">
+                                            <select
+                                                value={item.status}
+                                                disabled={updatingId === item.id || deletingId === item.id}
+                                                onChange={(e) =>
+                                                    handleStatus(item.id, e.target.value)
+                                                }
+                                                className="rounded-lg border border-[#e8ded2] px-2 py-2 text-xs outline-none disabled:opacity-50"
+                                            >
+                                                <option value="pending">Chờ xác nhận</option>
+                                                <option value="confirmed">Đã xác nhận</option>
+                                                <option value="completed">Đã hoàn thành</option>
+                                                <option value="cancelled">Đã hủy</option>
+                                            </select>
+
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                disabled={deletingId === item.id || updatingId === item.id}
+                                                className="rounded-lg bg-red-500 px-3 py-2 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                                            >
+                                                {deletingId === item.id ? 'Đang xóa...' : 'Xóa'}
+                                            </button>
+                                        </div>
                                     </td>
+
                                 </tr>
                             ))}
                             {filteredAppointments.length === 0 && (

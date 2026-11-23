@@ -60,4 +60,30 @@ router.patch("/:id/status", async (req, res) => {
   });
 });
 
+// DELETE /api/admin/appointments/:id
+// Xóa lịch đặt
+router.delete("/:id", async (req, res) => {
+  const id = Number(req.params.id);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({
+      message: "ID lịch đặt không hợp lệ",
+    });
+  }
+
+  const [result] = await db.query("DELETE FROM appointments WHERE id = ?", [
+    id,
+  ]);
+
+  if (result.affectedRows === 0) {
+    return res.status(404).json({
+      message: "Không tìm thấy lịch đặt",
+    });
+  }
+
+  res.json({
+    message: "Xóa lịch đặt thành công",
+  });
+});
+
 module.exports = router;
